@@ -1,14 +1,28 @@
 from channels.consumer import SyncConsumer
 from channels.exceptions import StopConsumer
-from .mlModels.functions import *
-
+from .mlModels.functions1 import *
+# from .mlModels.functions2 import *
 class SyncSocketConsumer(SyncConsumer):
-    camera=cv2.VideoCapture(0)
     def websocket_connect(self,event):
-        print('Connect...')
+        print('Connected...')
         self.camera=cv2.VideoCapture(0)
+        self.start_time = time.time()
+
+        # while time.time() - self.start_time < 180:
+        #     # print(time.time() - start_time)  # Run for 180 seconds
+        #     self.ret, self.frame = self.camera.read()
+        #     self.count = 0
+        #     for i in self.frame:
+        #         self.count += len(i) 
+        #     verification = verify(frame)
+        #     if verification:
+        #         verification = "verified"
+        #         break
+        #     else:
+        #         continue
         self.send({
             'type':'websocket.accept',
+            # 'text':verification
             })
     def websocket_disconnect(self,event):
         print('disconnected')
@@ -20,6 +34,9 @@ class SyncSocketConsumer(SyncConsumer):
     def websocket_receive(self,event):
         print("Message received from client",)
         data=run(self.camera)
-        print(data)
+        if data:
+            data='ok'
+        else:
+            data="alert"
         self.send({'type':'websocket.send',
         'text':data})

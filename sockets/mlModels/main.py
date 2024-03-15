@@ -1,10 +1,28 @@
+import cv2
+import time
 from functions import *
-camera = cv2.VideoCapture(0)
-while True:
-    output = run()
-    # if everything goes well, returns a python dictionary-->
-    #    {"direction": direction, "distance": distance}
-    # else returns a python dictionary-->
-    #    {"face_detected": False}
 
-    print(output)
+camera = cv2.VideoCapture(0)
+start_time = time.time()
+
+while time.time() - start_time < 180:
+    # print(time.time() - start_time)  # Run for 180 seconds
+    ret, frame = camera.read()
+    count = 0
+    for i in frame:
+        count += len(i) 
+    print(len(frame))
+    print(count)
+    verification = verify(frame)
+    if verification:
+        print("Candidate Verified.")
+        break
+    else:
+        continue
+
+# Release the camera
+camera.release()
+
+# If 30 seconds have elapsed and verification is not successful, print "False"
+if not verification:
+    print("Unable to verify.")
