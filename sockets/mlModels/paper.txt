@@ -1,0 +1,4 @@
+What is DSA?
+Define Machine learning.
+Explain merge sort.
+How to deploy a  Machine learning model??

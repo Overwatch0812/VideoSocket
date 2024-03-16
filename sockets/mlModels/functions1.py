@@ -56,7 +56,7 @@ def landmarksDetection(img, results, draw=False):
 def euclaideanDistance(point, point1):
     x, y = point
     x1, y1 = point1
-    distance = math.sqrt((x1 - x)**2 + (y1 - y)**2)
+    distance = math.sqrt((x1 - x)*2 + (y1 - y)*2)
     return distance
 
 # Blinking Ratio
@@ -189,7 +189,7 @@ def eye_track(ret, frame, rgb_frame, results):
     pts_array = np.array(r_eye_pts, np.int32)
     pts_array = pts_array.reshape((-1, 1, 2))
 
-    ratio = blinkRatio(frame, mesh_coords, RIGHT_EYE, LEFT_EYE)
+    # ratio = blinkRatio(frame, mesh_coords, RIGHT_EYE, LEFT_EYE)
 
 #     if ratio > 5.5:
 #         counter_threshold +=1
@@ -260,7 +260,7 @@ def head_pose(frame, results):
         y = angles[1] * 360
         z = angles[2] * 360
 
-        if y < -15:
+        if y < -10:
             text = "Left"
         elif y > 10:
             text = "Right"
@@ -341,9 +341,6 @@ classNames = [
 # Define the desired features
 desired_features = ["person", "book", "cell phone"]
 
-# Define the maximum duration before triggering the alert (in seconds)
-MAX_ALERT_DURATION = 8 
-
 # Initialize the timer
 alert_timer = 0
 alert_triggered = False
@@ -392,8 +389,8 @@ def obj_detect(ret, image):
     # Check if person count exceeds threshold
     if count[0] > 1 or count[1] > 0 or count[2] > 0:
         # Increment the alert timer
-        alert_timer += (1/fps)
-        if alert_timer > MAX_ALERT_DURATION:
+        alert_timer += 1
+        if alert_timer > 15:
             # Trigger alert
             alert_triggered = True
             alert_timer = 0
@@ -448,12 +445,15 @@ def run(camera):
 #         print(fps)  
 
         if direction in ["Right", "Left", "Up"]:
-            if fps > 0:
-                change_dir_counter += (1/fps)
-            else:
-                change_dir_counter += 0.5
-            if change_dir_counter > 2:
+            # if fps > 0:
+            #     change_dir_counter += (1/fps)
+            # else:
+            #     change_dir_counter += 0.5
+            change_dir_counter += 1
+            print(change_dir_counter)
+            if change_dir_counter > 20: # 65 good
                 change_dir_counter = 0
+                visibility_counter = 0
                 dir_warning_counter += 1
                 warning_count += 1
 #                 if dir_warning_counter > 3 or warning_count > 3:    
@@ -461,11 +461,8 @@ def run(camera):
 #                     return False
                 speak(alerts["direction"][1])
                 return False
-            obj_d =  obj_detect(ret, frame)
-            if not obj_d:
-                speak("Warning: An important object has been detected.")
-                return False
-            return True
+            else:
+                return True
         
         else:  
             obj_d =  obj_detect(ret, frame)
@@ -482,18 +479,21 @@ def run(camera):
             fps = 0
         start_time = end
         
-        vis_threshold = 0
-        if fps > 0:
-            visibility_counter += (1/fps)
-        else:
-            visibility_counter += 0.5
+        # vis_threshold = 0
+        # if fps > 0:
+        #     visibility_counter += (1/fps)
+        # else:
+        #     visibility_counter += 0.5
+        visibility_counter += 1
+        # print(visibility_counter)
 
-        vis_threshold = 5
-        if vis_warning_counter > 1:
-            vis_threshold = 8
-        if visibility_counter > vis_threshold:
+        # vis_threshold = 5
+        # if vis_warning_counter > 1:
+        #     vis_threshold = 8
+        if visibility_counter > 200:
             speak(alerts["visibility"][1])
             visibility_counter = 0
+            change_dir_counter = 0
             vis_warning_counter += 1
             warning_count += 1   
             return False
@@ -504,10 +504,9 @@ def run(camera):
 #                     speak(alerts["visibility"][1])
 #                     return False                
         else:   
-            obj_d =  obj_detect(ret, frame)
-            if obj_d is False:
-                speak("Warning: An important object has been detected.")
-                return False   
+            # obj_d =  obj_detect(ret, frame)
+            # if obj_d is False:
+            #     speak("Warning: An important object has been detected.")
+            #     return False   
             return True
-
 
