@@ -11,7 +11,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
-
+# import environ
+# env = environ.Env()
+# environ.Env.read_env()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -27,6 +29,13 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# email setup
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # gmail
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'sahil.nikshe22@it.sce.edu.in'
+EMAIL_HOST_PASSWORD = '12anand12'
 
 # Application definition
 
@@ -39,8 +48,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary_storage',
+    'cloudinary',
     'sockets'
 ]
+
+# cloudinary config
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'dxfeoomxq',
+    'API_KEY': '161781681775932',
+    'API_SECRET': 'zZfLjYyOrMpEp183llo8xqVt7eU'
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

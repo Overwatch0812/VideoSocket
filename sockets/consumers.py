@@ -223,6 +223,8 @@ from channels.exceptions import StopConsumer
 from .upload import uploadImage
 from .mlModels.functions1 import *
 import pyautogui
+from django.core.mail import send_mail
+import json
 # from .mlModels.verify import *
 
 import warnings
@@ -232,6 +234,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 class VideoSyncSocketConsumer(AsyncConsumer):
     async def websocket_connect(self,event):
         print('Connected...')
+        self.data = {"res": '', "link": []}
         self.camera=cv2.VideoCapture(0)
         self.imgCount = 1
         self.start_time = time.time()
@@ -249,19 +252,19 @@ class VideoSyncSocketConsumer(AsyncConsumer):
 
     async def websocket_receive(self,event):
         print("Message received from client",)
-        data, alertType=run(self.camera)
-        if data:
-            data='ok'      
-
+        result, alertType=run(self.camera)
+        if result:   
+            self.data["res"] = "ok"
         else:
-            data="alert"
+            self.data["res"] = "alert"
             ret,frame = self.camera.read()
             # ss = pyautogui.screenshot()
             # ss_cv = cv2.cvtColor(np.array(ss), cv2.COLOR_RGB2BGR)
+            print(self.data)
             wc_url=uploadImage(frame,f"webimg{self.imgCount}")
-            # ss_url=uploadImage(ss_cv,f"ssimg{self.imgCount}")
-            email = EmailMessage('Subject', 'Body', to=['sahilsuryawanshi76@gmail.com'])
-            # email.send()
+            self.data["link"].append(wc_url)
+
+            
             
             self.imgCount += 1
             if alertType == "d":
@@ -270,9 +273,9 @@ class VideoSyncSocketConsumer(AsyncConsumer):
                 speak("Warning: An important object has been detected.")
             elif alertType == "v":
                 speak("Attention: Your face is not visible to the camera.")
-
+        
         await self.send({'type':'websocket.send',
-            'text':data})
+            'text':json.dumps(self.data)})
         
         # try:
         #     v = ver('nikshe.png',self.camera)

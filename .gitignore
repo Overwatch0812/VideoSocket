@@ -2,3 +2,4 @@ venv
 .venv
 # yolov8s.pt
 environment
+finalenv
