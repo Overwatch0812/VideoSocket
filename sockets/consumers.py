@@ -221,11 +221,13 @@
 from channels.consumer import AsyncConsumer
 from channels.exceptions import StopConsumer
 from .mlModels.functions1 import *
+import pyautogui
 
-class SyncSocketConsumer(AsyncConsumer):
+class VideoSyncSocketConsumer(AsyncConsumer):
     async def websocket_connect(self,event):
         print('Connected...')
         self.camera=cv2.VideoCapture(0)
+        self.imgCount = 1
         self.start_time = time.time()
         await self.send({
             'type':'websocket.accept',
@@ -246,6 +248,11 @@ class SyncSocketConsumer(AsyncConsumer):
             data='ok'
         else:
             data="alert"
+            ret,frame = self.camera.read()
+            cv2.imwrite(f"webimg{self.imgCount}.jpg", frame)
+            pyautogui.screenshot().save(f"ss{self.imgCount}.jpg")
+            self.imgCount += 1
+
         await self.send({'type':'websocket.send',
         'text':data})
 
