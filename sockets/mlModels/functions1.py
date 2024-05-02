@@ -407,6 +407,7 @@ def obj_detect(ret, image):
 def run(camera):
     global change_dir_counter, start_time, dir_warning_counter, visibility_counter, vis_warning_counter, warning_count, alerts
     ret, frame = camera.read()
+    alertType = ""
 #     print(frame)
     frame = cv2.flip(frame, 1)
     frame = cv2.resize(frame, None, fx=1.5, fy=1.5, interpolation=cv2.INTER_CUBIC)
@@ -459,17 +460,19 @@ def run(camera):
 #                 if dir_warning_counter > 3 or warning_count > 3:    
 #                     speak(alerts["termination"][1])
 #                     return False
-                speak(alerts["direction"][1])
-                return False
+                alertType = "d"
+                
+                return False, alertType
             else:
-                return True
+                return True, ""
         
         else:  
             obj_d =  obj_detect(ret, frame)
             if obj_d is False:
-                speak("Warning: An important object has been detected.")
-                return False        
-            return True
+                
+                alertType = "o"
+                return False, alertType     
+            return True, ""
     else:
         end = time.time()
         totalTime = end - start_time  
@@ -491,12 +494,13 @@ def run(camera):
         # if vis_warning_counter > 1:
         #     vis_threshold = 8
         if visibility_counter > 20:
-            speak(alerts["visibility"][1])
+            
+            alertType = "v"
             visibility_counter = 0
             change_dir_counter = 0
             vis_warning_counter += 1
             warning_count += 1   
-            return False
+            return False, alertType
 #                 if vis_warning_counter > 3 or warning_count > 3:
 #                     speak(alerts["termination"][1])
 #                     return False
@@ -508,5 +512,5 @@ def run(camera):
             # if obj_d is False:
             #     speak("Warning: An important object has been detected.")
             #     return False   
-            return True
+            return True, ""
 

@@ -217,11 +217,17 @@
 #             )
 
 # Working
-
+from django.core.mail import EmailMessage
 from channels.consumer import AsyncConsumer
 from channels.exceptions import StopConsumer
+from .upload import uploadImage
 from .mlModels.functions1 import *
 import pyautogui
+# from .mlModels.verify import *
+
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 
 class VideoSyncSocketConsumer(AsyncConsumer):
     async def websocket_connect(self,event):
@@ -243,18 +249,64 @@ class VideoSyncSocketConsumer(AsyncConsumer):
 
     async def websocket_receive(self,event):
         print("Message received from client",)
-        data=run(self.camera)
+        data, alertType=run(self.camera)
         if data:
-            data='ok'
+            data='ok'      
+
         else:
             data="alert"
             ret,frame = self.camera.read()
-            cv2.imwrite(f"webimg{self.imgCount}.jpg", frame)
-            pyautogui.screenshot().save(f"ss{self.imgCount}.jpg")
+            # ss = pyautogui.screenshot()
+            # ss_cv = cv2.cvtColor(np.array(ss), cv2.COLOR_RGB2BGR)
+            wc_url=uploadImage(frame,f"webimg{self.imgCount}")
+            # ss_url=uploadImage(ss_cv,f"ssimg{self.imgCount}")
+            email = EmailMessage('Subject', 'Body', to=['sahilsuryawanshi76@gmail.com'])
+            # email.send()
+            
             self.imgCount += 1
+            if alertType == "d":
+                speak("Alert: It seems you are not facing the camera.")
+            elif alertType == "o":
+                speak("Warning: An important object has been detected.")
+            elif alertType == "v":
+                speak("Attention: Your face is not visible to the camera.")
 
         await self.send({'type':'websocket.send',
-        'text':data})
+            'text':data})
+        
+        # try:
+        #     v = ver('nikshe.png',self.camera)
+        #     if v == 'v':
+        #         print('Verified')
+        #         data, alertType=run(self.camera)
+        #         if data:
+        #             data='ok'
+        #         else:
+        #             data="alert"
+        #             ret,frame = self.camera.read()
+        #             # ss = pyautogui.screenshot()
+        #             # ss_cv = cv2.cvtColor(np.array(ss), cv2.COLOR_RGB2BGR)
+        #             wc_url=uploadImage(frame,f"webimg{self.imgCount}")
+        #             # ss_url=uploadImage(ss_cv,f"ssimg{self.imgCount}")
+        #             email = EmailMessage('Subject', 'Body', to=['sahilsuryawanshi76@gmail.com'])
+        #             # email.send()
+                    
+        #             self.imgCount += 1
+        #             if alertType == "d":
+        #                 speak("Alert: It seems you are not facing the camera.")
+        #             elif alertType == "o":
+        #                 speak("Warning: An important object has been detected.")
+        #             elif alertType == "v":
+        #                 speak("Attention: Your face is not visible to the camera.")
+
+        #         await self.send({'type':'websocket.send',
+        #         'text':data})
+        #     elif v == 'f':
+        #         print("Verification Failed!")
+        #     elif v == 'n':
+        #         print("No Face Detected!")
+        # except ValueError as e:
+        #     print(e)
 
 
 # from channels.consumer import AsyncConsumer
